@@ -1,32 +1,25 @@
 name: Windows Build
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on: [push]
 jobs:
   build:
     runs-on: windows-latest
     steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       - name: Check out repository code
         uses: actions/checkout@v4
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: List files in the repository
-        run: |
-          ls ${{ github.workspace }}
-      - run: echo "🍏 This job's status is ${{ job.status }}."
       - name: Install Rust WASM Toolkit
         run: rustup target add wasm32-wasi
+      - name: Cache dependencies
+        uses: swatinem/rust-cache@v2
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Build the application
-        run: cargo build --release
-      - run: tree ./target/
-      #- uses: actions/upload-artifact@v4
-      #   with:
+        run: cargo build --release -p zed
+      - run: tree ./target/ /f
+      - uses: actions/upload-artifact@v4
+        with:
           # Name of the artifact to upload.
           # Optional. Default is 'artifact'
-      #    name: zed-win-64
-
+          name: zed-win-64
           # A file, directory or wildcard pattern that describes what to upload
           # Required.
-      #    path: target/*
+          path: target/x86_64-pc-windows-msvc/release/Zed.exe
